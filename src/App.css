@@ -102,3 +102,21 @@ h1 {
   padding: 5px;
   width: 400px;
 }
+
+.input-wrap select {
+  width: 307px;
+}
+
+.input-wrap select {
+  font-family: RingBearer;
+  color: #888;
+}
+
+.css-b62m3t-container {
+  width: 310px;
+  text-align: justify;
+}
+
+.css-13cymwt-control {
+  box-sizing: border-box;
+}
