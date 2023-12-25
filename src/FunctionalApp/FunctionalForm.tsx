@@ -67,13 +67,14 @@ export const FunctionalForm = () => {
       setShowAlert(true);
       setDisplayErrorMessage(true);
     } else {
-      setUserData({
+      setUserData((prevUserData) => ({
+        ...prevUserData,
         email: emailInput,
         firstName: firstNameInput,
         lastName: lastNameInput,
         city: cityInput,
         phone: formatPhoneNumber(phoneInputState.join("")),
-      });
+      }));
       setFormSubmittedSuccessfully(true);
       setDisplayErrorMessage(false);
       resetForm();
@@ -107,7 +108,11 @@ export const FunctionalForm = () => {
 
   return (
     <div>
-      {formSubmittedSuccessfully && <ProfileInformation userData={userData} />}
+      {formSubmittedSuccessfully ? (
+        <ProfileInformation userData={userData} />
+      ) : (
+        <ProfileInformation userData={null} />
+      )}
 
       {showAlert && <div className="alert"></div>}
       <form onSubmit={handleSubmit}>
