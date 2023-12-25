@@ -67,14 +67,13 @@ export const FunctionalForm = () => {
       setShowAlert(true);
       setDisplayErrorMessage(true);
     } else {
-      setUserData((prevUserData) => ({
-        ...prevUserData,
+      setUserData({
         email: emailInput,
         firstName: firstNameInput,
         lastName: lastNameInput,
         city: cityInput,
         phone: formatPhoneNumber(phoneInputState.join("")),
-      }));
+      });
       setFormSubmittedSuccessfully(true);
       setDisplayErrorMessage(false);
       resetForm();
