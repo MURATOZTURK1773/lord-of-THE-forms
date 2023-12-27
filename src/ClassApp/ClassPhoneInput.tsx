@@ -33,7 +33,7 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
       const currentMaxLength = lengths[index];
       const nextRef = refs[index + 1];
       const prevRef = refs[index - 1];
-      const value = e.target.value;
+      const value = (e.target as HTMLInputElement).value;
 
       const shouldGoToNextRef = currentMaxLength === value.length;
       const shouldGoToPrevRef = value.length === 0;

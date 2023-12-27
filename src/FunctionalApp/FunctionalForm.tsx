@@ -4,9 +4,8 @@ import { TextInput } from "./FunctionalTextInput";
 import { PhoneInput, PhoneInputState } from "./FunctionalPhoneInput";
 import { isEmailValid, isPhoneValid, isValidCity } from "../utils/validations";
 import { allCities } from "../utils/all-cities";
-import { SelectInput, Option } from "./FunctionalCityInput";
-import { ProfileInformation } from "../ProfileInformation";
 import { formatPhoneNumber } from "../utils/transformations";
+import { UserInformation } from "../types";
 
 const firstNameErrorMessage = "First name must be at least 2 characters long";
 const lastNameErrorMessage = "Last name must be at least 2 characters long";
@@ -14,12 +13,17 @@ const emailErrorMessage = "Email is Invalid";
 const cityErrorMessage = "State is Invalid";
 const phoneNumberErrorMessage = "Invalid Phone Number";
 
-export const FunctionalForm = () => {
+interface FunctionalAppProps {
+  onFormSubmit: (userData: UserInformation) => void;
+}
+
+export const FunctionalForm: React.FC<FunctionalAppProps> = ({
+  onFormSubmit,
+}) => {
   const [firstNameInput, setFirstNameInput] = useState("");
   const [lastNameInput, setLastNameInput] = useState("");
   const [emailInput, setEmailInput] = useState("");
   const [cityInput, setCityInput] = useState("");
-  const [resetKey, setResetKey] = useState<string>("initialKey");
   const [phoneInputState, setPhoneInputState] = useState<PhoneInputState>([
     "",
     "",
@@ -27,27 +31,12 @@ export const FunctionalForm = () => {
     "",
   ]);
   const [displayErrorMessage, setDisplayErrorMessage] = useState(false);
-  const [joinedPhoneNumber, setJoinedPhoneNumber] = useState("");
-  const [showAlert, setShowAlert] = useState(false);
-  const [formSubmittedSuccessfully, setFormSubmittedSuccessfully] =
-    useState(false);
-
-  const [userData, setUserData] = useState({
-    email: "",
-    firstName: "",
-    lastName: "",
-    city: "",
-    phone: "",
-  });
 
   const resetForm = () => {
     setFirstNameInput("");
     setLastNameInput("");
     setEmailInput("");
     setCityInput("");
-    setResetKey((prevKey) =>
-      prevKey === "resetKey" ? "initialKey" : "resetKey"
-    );
     setPhoneInputState(["", "", "", ""]);
   };
 
@@ -61,59 +50,25 @@ export const FunctionalForm = () => {
       firstNameInput.length < 2 ||
       lastNameInput.length < 2
     ) {
-      setFormSubmittedSuccessfully(false);
       const alertMessage = "bAd DATA InPuT";
       alert(alertMessage);
-      setShowAlert(true);
       setDisplayErrorMessage(true);
     } else {
-      setUserData({
+      onFormSubmit({
         email: emailInput,
         firstName: firstNameInput,
         lastName: lastNameInput,
         city: cityInput,
         phone: formatPhoneNumber(phoneInputState.join("")),
       });
-      setFormSubmittedSuccessfully(true);
       setDisplayErrorMessage(false);
       resetForm();
     }
   };
 
-  const handleSetCityInput = (selectedOption: Option | null) => {
-    setCityInput(selectedOption ? selectedOption.value : "");
-  };
-
-  const cities: Option[] = allCities.map((city) => ({
-    value: city,
-    label: city,
-  }));
-
-  function ErrorTracker() {
-    const joinedPhoneNumber = phoneInputState.join("");
-    setJoinedPhoneNumber(joinedPhoneNumber);
-    console.log(joinedPhoneNumber);
-
-    if (
-      !isEmailValid(emailInput) ||
-      !allCities.includes(cityInput) ||
-      joinedPhoneNumber.length < 6
-    ) {
-      setDisplayErrorMessage(true);
-    } else {
-      setDisplayErrorMessage(false);
-    }
-  }
-
   return (
     <div>
-      {formSubmittedSuccessfully ? (
-        <ProfileInformation userData={userData} />
-      ) : (
-        <ProfileInformation userData={null} />
-      )}
-
-      {showAlert && <div className="alert"></div>}
+      <div className="alert"></div>
       <form onSubmit={handleSubmit}>
         <u>
           <h3>User Information Form</h3>
@@ -123,7 +78,6 @@ export const FunctionalForm = () => {
           inputProps={{
             onChange: (e) => {
               setFirstNameInput(e.target.value);
-              ErrorTracker();
             },
             value: firstNameInput,
           }}
@@ -139,7 +93,6 @@ export const FunctionalForm = () => {
           inputProps={{
             onChange: (e) => {
               setLastNameInput(e.target.value);
-              ErrorTracker();
             },
             value: lastNameInput,
           }}
@@ -155,7 +108,6 @@ export const FunctionalForm = () => {
           inputProps={{
             onChange: (e) => {
               setEmailInput(e.target.value);
-              ErrorTracker();
             },
             value: emailInput,
           }}
@@ -167,14 +119,16 @@ export const FunctionalForm = () => {
           show={displayErrorMessage && !isEmailValid(emailInput)}
         />
 
-        <SelectInput
-          options={cities}
-          onSelectChange={handleSetCityInput}
-          selectedValue={cityInput}
-          labelText="CITY:"
-          placeholder="Hobiton"
-          resetKey={resetKey}
-        />
+        <div className="input-wrap">
+          <label htmlFor="CITY:">CITY:</label>
+          <input
+            value={cityInput}
+            type="text"
+            list="cities"
+            placeholder="HOBITON"
+            onChange={(e) => setCityInput(e.target.value)}
+          />
+        </div>
 
         <ErrorMessage
           message={cityErrorMessage}
@@ -184,7 +138,6 @@ export const FunctionalForm = () => {
         <PhoneInput
           inputProps={{
             onChange: () => {
-              ErrorTracker();
               isPhoneValid(phoneInputState);
             },
             placeholder: "55",
@@ -195,11 +148,7 @@ export const FunctionalForm = () => {
 
         <ErrorMessage
           message={phoneNumberErrorMessage}
-          show={
-            displayErrorMessage &&
-            !isPhoneValid(phoneInputState) &&
-            joinedPhoneNumber.length < 6
-          }
+          show={displayErrorMessage && !isPhoneValid(phoneInputState)}
         />
 
         <input type="submit" value="Submit" />

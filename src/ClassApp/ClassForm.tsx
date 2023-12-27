@@ -4,22 +4,19 @@ import { TextInput } from "../FunctionalApp/FunctionalTextInput";
 import { PhoneInput, PhoneInputState } from "./ClassPhoneInput";
 import { isEmailValid, isPhoneValid, isValidCity } from "../utils/validations";
 import { allCities } from "../utils/all-cities";
-import { SelectInput, Option } from "../FunctionalApp/FunctionalCityInput";
-import { ProfileInformation } from "../ProfileInformation";
+import { UserInformation } from "../types";
 import { formatPhoneNumber } from "../utils/transformations";
 
-interface ClassFormProps {}
+interface ClassAppProps {
+  onFormSubmit: (userData: UserInformation) => void;
+}
 interface ClassFormState {
   firstNameInput: string;
   lastNameInput: string;
   emailInput: string;
   cityInput: string;
-  resetKey: string;
   phoneInputState: PhoneInputState;
   displayErrorMessage: boolean;
-  joinedPhoneNumber: string;
-  showAlert: boolean;
-  formSubmittedSuccessfully: boolean;
   userData: {
     email: string;
     firstName: string;
@@ -35,8 +32,8 @@ const emailErrorMessage = "Email is Invalid";
 const cityErrorMessage = "State is Invalid";
 const phoneNumberErrorMessage = "Invalid Phone Number";
 
-export class ClassForm extends Component<ClassFormProps, ClassFormState> {
-  constructor(props: ClassFormProps) {
+export class ClassForm extends Component<ClassAppProps, ClassFormState> {
+  constructor(props: ClassAppProps) {
     super(props);
 
     this.state = {
@@ -44,12 +41,8 @@ export class ClassForm extends Component<ClassFormProps, ClassFormState> {
       lastNameInput: "",
       emailInput: "",
       cityInput: "",
-      resetKey: "initialKey",
       phoneInputState: ["", "", "", ""],
       displayErrorMessage: false,
-      joinedPhoneNumber: "",
-      showAlert: false,
-      formSubmittedSuccessfully: false,
       userData: {
         email: "",
         firstName: "",
@@ -66,7 +59,6 @@ export class ClassForm extends Component<ClassFormProps, ClassFormState> {
       lastNameInput: "",
       emailInput: "",
       cityInput: "",
-      resetKey: this.state.resetKey === "resetKey" ? "initialKey" : "resetKey",
       phoneInputState: ["", "", "", ""],
     });
   };
@@ -82,8 +74,6 @@ export class ClassForm extends Component<ClassFormProps, ClassFormState> {
       this.state.lastNameInput.length < 2
     ) {
       this.setState({
-        formSubmittedSuccessfully: false,
-        showAlert: true,
         displayErrorMessage: true,
       });
 
@@ -98,38 +88,13 @@ export class ClassForm extends Component<ClassFormProps, ClassFormState> {
         phone: formatPhoneNumber(this.state.phoneInputState.join("")),
       };
 
+      this.props.onFormSubmit(userData);
+
       this.setState({
         userData,
-        formSubmittedSuccessfully: true,
         displayErrorMessage: false,
       });
-
       this.resetForm();
-    }
-  };
-
-  handleSetCityInput = (selectedOption: Option | null) => {
-    this.setState({
-      cityInput: selectedOption ? selectedOption.value : "",
-    });
-  };
-
-  ErrorTracker = () => {
-    const joinedPhoneNumber = this.state.phoneInputState.join("");
-    console.log(joinedPhoneNumber);
-
-    if (
-      !isEmailValid(this.state.emailInput) ||
-      !allCities.includes(this.state.cityInput) ||
-      joinedPhoneNumber.length < 6
-    ) {
-      this.setState({
-        displayErrorMessage: true,
-      });
-    } else {
-      this.setState({
-        displayErrorMessage: false,
-      });
     }
   };
 
@@ -139,29 +104,13 @@ export class ClassForm extends Component<ClassFormProps, ClassFormState> {
       lastNameInput,
       emailInput,
       cityInput,
-      resetKey,
       phoneInputState,
       displayErrorMessage,
-      joinedPhoneNumber,
-      showAlert,
-      formSubmittedSuccessfully,
-      userData,
     } = this.state;
-
-    const cities: Option[] = allCities.map((city) => ({
-      value: city,
-      label: city,
-    }));
 
     return (
       <div>
-        {formSubmittedSuccessfully ? (
-          <ProfileInformation userData={userData} />
-        ) : (
-          <ProfileInformation userData={null} />
-        )}
-
-        {showAlert && <div className="alert"></div>}
+        <div className="alert"></div>
         <form onSubmit={this.handleSubmit}>
           <u>
             <h3>User Information Form</h3>
@@ -173,7 +122,6 @@ export class ClassForm extends Component<ClassFormProps, ClassFormState> {
                 this.setState({
                   firstNameInput: e.target.value,
                 });
-                this.ErrorTracker();
               },
               value: firstNameInput,
             }}
@@ -191,7 +139,6 @@ export class ClassForm extends Component<ClassFormProps, ClassFormState> {
                 this.setState({
                   lastNameInput: e.target.value,
                 });
-                this.ErrorTracker();
               },
               value: lastNameInput,
             }}
@@ -209,7 +156,6 @@ export class ClassForm extends Component<ClassFormProps, ClassFormState> {
                 this.setState({
                   emailInput: e.target.value,
                 });
-                this.ErrorTracker();
               },
               value: emailInput,
             }}
@@ -221,14 +167,16 @@ export class ClassForm extends Component<ClassFormProps, ClassFormState> {
             show={displayErrorMessage && !isEmailValid(emailInput)}
           />
 
-          <SelectInput
-            options={cities}
-            onSelectChange={this.handleSetCityInput}
-            selectedValue={cityInput}
-            labelText="CITY:"
-            placeholder="Hobiton"
-            resetKey={resetKey}
-          />
+          <div className="input-wrap">
+            <label htmlFor="CITY:">CITY:</label>
+            <input
+              value={cityInput}
+              type="text"
+              list="cities"
+              placeholder="HOBITON"
+              onChange={(e) => this.setState({ cityInput: e.target.value })}
+            />
+          </div>
 
           <ErrorMessage
             message={cityErrorMessage}
@@ -238,7 +186,6 @@ export class ClassForm extends Component<ClassFormProps, ClassFormState> {
           <PhoneInput
             inputProps={{
               onChange: () => {
-                this.ErrorTracker();
                 isPhoneValid(phoneInputState);
               },
               placeholder: "55",
@@ -251,11 +198,7 @@ export class ClassForm extends Component<ClassFormProps, ClassFormState> {
 
           <ErrorMessage
             message={phoneNumberErrorMessage}
-            show={
-              displayErrorMessage &&
-              !isPhoneValid(phoneInputState) &&
-              joinedPhoneNumber.length < 6
-            }
+            show={displayErrorMessage && !isPhoneValid(phoneInputState)}
           />
 
           <input type="submit" value="Submit" />
