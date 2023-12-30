@@ -1,16 +1,10 @@
-import React, {
-  ChangeEventHandler,
-  ComponentProps,
-  Dispatch,
-  SetStateAction,
-  useRef,
-} from "react";
+import React, { ChangeEventHandler, ComponentProps, useRef } from "react";
 
 export type PhoneInputState = [string, string, string, string];
 
 interface PhoneInputProps {
   inputProps: ComponentProps<"input">;
-  setPhoneInputState: Dispatch<SetStateAction<PhoneInputState>>;
+  setPhoneInputState: (input: PhoneInputState) => void;
   phoneInputState: PhoneInputState;
 }
 

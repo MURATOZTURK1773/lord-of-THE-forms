@@ -40,15 +40,23 @@ export const FunctionalForm: React.FC<FunctionalAppProps> = ({
     setPhoneInputState(["", "", "", ""]);
   };
 
+  const validities = {
+    firstName: firstNameInput.length < 2,
+    lastName: lastNameInput.length < 2,
+    email: isEmailValid(emailInput),
+    city: isValidCity(cityInput, allCities),
+    phone: isPhoneValid(phoneInputState),
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (
-      !isEmailValid(emailInput) ||
+      !validities.email ||
       !isPhoneValid(phoneInputState) ||
       !isValidCity(cityInput, allCities) ||
-      firstNameInput.length < 2 ||
-      lastNameInput.length < 2
+      validities.firstName ||
+      validities.lastName
     ) {
       const alertMessage = "bAd DATA InPuT";
       alert(alertMessage);
@@ -86,7 +94,7 @@ export const FunctionalForm: React.FC<FunctionalAppProps> = ({
         />
         <ErrorMessage
           message={firstNameErrorMessage}
-          show={displayErrorMessage && firstNameInput.length < 2}
+          show={displayErrorMessage && validities.firstName}
         />
 
         <TextInput
@@ -101,7 +109,7 @@ export const FunctionalForm: React.FC<FunctionalAppProps> = ({
         />
         <ErrorMessage
           message={lastNameErrorMessage}
-          show={displayErrorMessage && lastNameInput.length < 2}
+          show={displayErrorMessage && validities.lastName}
         />
 
         <TextInput
@@ -116,7 +124,7 @@ export const FunctionalForm: React.FC<FunctionalAppProps> = ({
         />
         <ErrorMessage
           message={emailErrorMessage}
-          show={displayErrorMessage && !isEmailValid(emailInput)}
+          show={displayErrorMessage && !validities.email}
         />
 
         <div className="input-wrap">
@@ -132,7 +140,7 @@ export const FunctionalForm: React.FC<FunctionalAppProps> = ({
 
         <ErrorMessage
           message={cityErrorMessage}
-          show={displayErrorMessage && !isValidCity(cityInput, allCities)}
+          show={displayErrorMessage && !validities.city}
         />
 
         <PhoneInput
@@ -148,7 +156,7 @@ export const FunctionalForm: React.FC<FunctionalAppProps> = ({
 
         <ErrorMessage
           message={phoneNumberErrorMessage}
-          show={displayErrorMessage && !isPhoneValid(phoneInputState)}
+          show={displayErrorMessage && !validities.phone}
         />
 
         <input type="submit" value="Submit" />

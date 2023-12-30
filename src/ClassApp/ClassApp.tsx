@@ -8,13 +8,9 @@ interface ClassAppState {
 }
 
 export class ClassApp extends Component<Record<string, never>, ClassAppState> {
-  constructor(props: Record<string, never>) {
-    super(props);
-
-    this.state = {
-      user: null,
-    };
-  }
+  state: ClassAppState = {
+    user: null,
+  };
 
   handleFormSubmit = (userData: UserInformation) => {
     this.setState({ user: userData });
@@ -26,11 +22,7 @@ export class ClassApp extends Component<Record<string, never>, ClassAppState> {
     return (
       <>
         <h2>Class Component</h2>
-        {user ? (
-          <ProfileInformation userData={user} />
-        ) : (
-          <ProfileInformation userData={null} />
-        )}
+        <ProfileInformation userData={user} />
         <ClassForm onFormSubmit={this.handleFormSubmit} />
       </>
     );

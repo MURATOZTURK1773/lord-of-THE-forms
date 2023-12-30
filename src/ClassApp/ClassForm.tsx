@@ -17,13 +17,6 @@ interface ClassFormState {
   cityInput: string;
   phoneInputState: PhoneInputState;
   displayErrorMessage: boolean;
-  userData: {
-    email: string;
-    firstName: string;
-    lastName: string;
-    city: string;
-    phone: string;
-  };
 }
 
 const firstNameErrorMessage = "First name must be at least 2 characters long";
@@ -33,25 +26,22 @@ const cityErrorMessage = "State is Invalid";
 const phoneNumberErrorMessage = "Invalid Phone Number";
 
 export class ClassForm extends Component<ClassAppProps, ClassFormState> {
-  constructor(props: ClassAppProps) {
-    super(props);
+  state: ClassFormState = {
+    firstNameInput: "",
+    lastNameInput: "",
+    emailInput: "",
+    cityInput: "",
+    phoneInputState: ["", "", "", ""],
+    displayErrorMessage: false,
+  };
 
-    this.state = {
-      firstNameInput: "",
-      lastNameInput: "",
-      emailInput: "",
-      cityInput: "",
-      phoneInputState: ["", "", "", ""],
-      displayErrorMessage: false,
-      userData: {
-        email: "",
-        firstName: "",
-        lastName: "",
-        city: "",
-        phone: "",
-      },
-    };
-  }
+  validities = {
+    firstName: this.state.firstNameInput.length < 2,
+    lastName: this.state.lastNameInput.length < 2,
+    email: isEmailValid(this.state.emailInput),
+    city: isValidCity(this.state.cityInput, allCities),
+    phone: isPhoneValid(this.state.phoneInputState),
+  };
 
   resetForm = () => {
     this.setState({
@@ -66,12 +56,20 @@ export class ClassForm extends Component<ClassAppProps, ClassFormState> {
   handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    this.validities = {
+      firstName: this.state.firstNameInput.length < 2,
+      lastName: this.state.lastNameInput.length < 2,
+      email: isEmailValid(this.state.emailInput),
+      city: isValidCity(this.state.cityInput, allCities),
+      phone: isPhoneValid(this.state.phoneInputState),
+    };
+
     if (
-      !isEmailValid(this.state.emailInput) ||
-      !isPhoneValid(this.state.phoneInputState) ||
-      !isValidCity(this.state.cityInput, allCities) ||
-      this.state.firstNameInput.length < 2 ||
-      this.state.lastNameInput.length < 2
+      !this.validities.email ||
+      !this.validities.phone ||
+      !this.validities.city ||
+      this.validities.firstName ||
+      this.validities.lastName
     ) {
       this.setState({
         displayErrorMessage: true,
@@ -91,7 +89,6 @@ export class ClassForm extends Component<ClassAppProps, ClassFormState> {
       this.props.onFormSubmit(userData);
 
       this.setState({
-        userData,
         displayErrorMessage: false,
       });
       this.resetForm();
@@ -107,6 +104,14 @@ export class ClassForm extends Component<ClassAppProps, ClassFormState> {
       phoneInputState,
       displayErrorMessage,
     } = this.state;
+
+    const validities = {
+      firstName: firstNameInput.length < 2,
+      lastName: lastNameInput.length < 2,
+      email: isEmailValid(emailInput),
+      city: isValidCity(cityInput, allCities),
+      phone: isPhoneValid(phoneInputState),
+    };
 
     return (
       <div>
@@ -130,7 +135,7 @@ export class ClassForm extends Component<ClassAppProps, ClassFormState> {
           />
           <ErrorMessage
             message={firstNameErrorMessage}
-            show={displayErrorMessage && firstNameInput.length < 2}
+            show={displayErrorMessage && validities.firstName}
           />
 
           <TextInput
@@ -147,7 +152,7 @@ export class ClassForm extends Component<ClassAppProps, ClassFormState> {
           />
           <ErrorMessage
             message={lastNameErrorMessage}
-            show={displayErrorMessage && lastNameInput.length < 2}
+            show={displayErrorMessage && validities.lastName}
           />
 
           <TextInput
@@ -164,7 +169,7 @@ export class ClassForm extends Component<ClassAppProps, ClassFormState> {
           />
           <ErrorMessage
             message={emailErrorMessage}
-            show={displayErrorMessage && !isEmailValid(emailInput)}
+            show={displayErrorMessage && !validities.email}
           />
 
           <div className="input-wrap">
@@ -180,7 +185,7 @@ export class ClassForm extends Component<ClassAppProps, ClassFormState> {
 
           <ErrorMessage
             message={cityErrorMessage}
-            show={displayErrorMessage && !isValidCity(cityInput, allCities)}
+            show={displayErrorMessage && !validities.city}
           />
 
           <PhoneInput
@@ -198,7 +203,7 @@ export class ClassForm extends Component<ClassAppProps, ClassFormState> {
 
           <ErrorMessage
             message={phoneNumberErrorMessage}
-            show={displayErrorMessage && !isPhoneValid(phoneInputState)}
+            show={displayErrorMessage && !validities.phone}
           />
 
           <input type="submit" value="Submit" />
